@@ -1,0 +1,54 @@
+
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="Personal website and web development playground for experimenting with HTML, CSS, and JavaScript." />
+  <title>Kjettorp</title>
+  <!-- Skrifttyper -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+  
+  <!-- Stilark -->
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- IMDb stilark (hentes via serveren) -->
+  <link rel="stylesheet" href="/imdb-app/css/style.css"/> 
+</head>
+<body>
+  <!-- Overskrift -->
+  <header style="text-align: center; padding-top: 20px;">
+    <h1>Kjorpens</h1>
+  </header>
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <!-- Meny til Plex, torrent og IMDB og lokal IMDB Watchlist -->
+      <div class="dropdown">
+        <button onclick="toggleMenu(event, 'myDropdown')" class="dropbtn">Meny</button>
+        <div id="myDropdown" class="dropdown-content nav-links">
+          <a href="https://app.plex.tv/desktop/" target="_blank" rel="noopener noreferrer">Plex</a>
+          <a href="https://1337x.to" target="_blank" rel="noopener noreferrer">Torrent</a>
+          <a href="https://imdb.com" target="_blank" rel="noopener noreferrer">IMDb</a>
+          <!-- Går til IMDb-appen via serveren -->
+          <a href="/imdb-app/index.html" target="_blank" rel="noopener noreferrer">IMDB Watchlist</a>
+          <a href="https://sourceforge.net/projects/azureus/files/vuze/" target="_blank" rel="noopener noreferrer">Vuze</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <!-- ── Hero ── -->
+  <section class="hero" id="home">
+    <div class="hero-bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="grid-overlay"></div>
+    </div>
+  </section>
+  <!-- Hoved-skriptet for hovedsiden din -->
+  <script src="js/main.js"></script>
+</body>
+</html>
