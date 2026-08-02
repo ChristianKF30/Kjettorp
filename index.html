@@ -1,54 +1,150 @@
-
 <!DOCTYPE html>
 <html lang="no">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description"
-    content="Personal website and web development playground for experimenting with HTML, CSS, and JavaScript." />
-  <title>Kjettorp</title>
-  <!-- Skrifttyper -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
-    rel="stylesheet" />
-  
-  <!-- Stilark -->
-  <link rel="stylesheet" href="css/style.css" />
-  <!-- IMDb stilark (hentes via serveren) -->
-  <link rel="stylesheet" href="/imdb-app/css/style.css"/> 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Min IMDb Ønskeliste</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <!-- Overskrift -->
-  <header style="text-align: center; padding-top: 20px;">
-    <h1>Kjorpens</h1>
-  </header>
-  <nav class="navbar" id="navbar">
-    <div class="nav-inner">
-      <!-- Meny til Plex, torrent og IMDB og lokal IMDB Watchlist -->
-      <div class="dropdown">
-        <button onclick="toggleMenu(event, 'myDropdown')" class="dropbtn">Meny</button>
-        <div id="myDropdown" class="dropdown-content nav-links">
-          <a href="https://app.plex.tv/desktop/" target="_blank" rel="noopener noreferrer">Plex</a>
-          <a href="https://1337x.to" target="_blank" rel="noopener noreferrer">Torrent</a>
-          <a href="https://imdb.com" target="_blank" rel="noopener noreferrer">IMDb</a>
-          <!-- Går til IMDb-appen via serveren -->
-          <a href="/imdb-app/index.html" target="_blank" rel="noopener noreferrer">IMDB Watchlist</a>
-          <a href="https://sourceforge.net/projects/azureus/files/vuze/" target="_blank" rel="noopener noreferrer">Vuze</a>
+
+<body class="bg-gray-900 text-gray-100 min-h-screen font-sans">
+
+    <div class="container mx-auto max-w-2xl px-4 py-10">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-yellow-500 mb-2">🎬 Film & Serie Ønskeliste</h1>
+            <p class="text-gray-400">Lim inn IMDb-lenker på det du vil se!</p>
+        </header>
+
+        <!-- Skjema for å legge til ønske -->
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg mb-8">
+            <form id="wishForm" class="flex flex-col sm:flex-row gap-3">
+                <input type="url" id="imdbUrl" placeholder="https://www.imdb.com/title/tt..." required
+                    class="flex-1 bg-gray-700 border border-gray-600 rounded px-4 py-2 text-white focus:outline-none focus:border-yellow-500">
+                <button type="submit"
+                    class="bg-yellow-500 hover:bg-yellow-600 text-gray-950 font-bold px-6 py-2 rounded transition duration-200">
+                    Legg til
+                </button>
+            </form>
+            <p id="errorMessage" class="text-red-400 text-sm mt-3 hidden"></p>
         </div>
-      </div>
+
+        <!-- Ønskelisten -->
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h2 class="text-xl font-bold mb-4 text-gray-300">Mine Ønsker</h2>
+
+            <p id="emptyMessage" class="text-gray-500 py-4 text-center">Ønskelisten er tom. Legg til noe over!</p>
+
+            <ul id="wishList" class="divide-y divide-gray-700"></ul>
+        </div>
     </div>
-  </nav>
-  <!-- ── Hero ── -->
-  <section class="hero" id="home">
-    <div class="hero-bg">
-      <div class="blob blob-1"></div>
-      <div class="blob blob-2"></div>
-      <div class="grid-overlay"></div>
-    </div>
-  </section>
-  <!-- Hoved-skriptet for hovedsiden din -->
-  <script src="js/main.js"></script>
+
+    <!-- Frontend-logikk for å kommunisere med serveren -->
+    <script>
+        const wishForm = document.getElementById('wishForm');
+        const imdbUrlInput = document.getElementById('imdbUrl');
+        const errorMessage = document.getElementById('errorMessage');
+        const emptyMessage = document.getElementById('emptyMessage');
+        const wishList = document.getElementById('wishList');
+
+        // 1. Hent og vis alle ønsker fra serveren
+        async function fetchWishes() {
+            try {
+                const response = await fetch('/api/wishes');
+                const wishes = await response.json();
+                renderWishes(wishes);
+            } catch (err) {
+                console.error('Kunne ikke hente ønsker:', err);
+            }
+        }
+
+        // 2. Tegn listen på skjermen
+        function renderWishes(wishes) {
+            wishList.innerHTML = '';
+
+            if (wishes.length === 0) {
+                emptyMessage.classList.remove('hidden');
+            } else {
+                emptyMessage.classList.add('hidden');
+
+                wishes.forEach(wish => {
+                    const li = document.createElement('li');
+                    li.className = 'py-4 flex justify-between items-center gap-4';
+                    li.innerHTML = `
+                        <div class="flex items-center gap-3 min-w-0">
+                            <span class="flex-shrink-0 bg-yellow-500/10 text-yellow-500 text-xs font-semibold px-2 py-1 rounded border border-yellow-500/20">
+                                ${wish.type}
+                            </span>
+                            <a href="${wish.imdb_url}" target="_blank" class="hover:underline text-yellow-400 hover:text-yellow-300 font-medium truncate">
+                                ${wish.title}
+                            </a>
+                        </div>
+                        <button onclick="deleteWish('${wish.id}')" class="text-red-400 hover:text-red-300 text-sm font-semibold transition duration-150 flex-shrink-0">
+                            Slett
+                        </button>
+                    `;
+                    wishList.appendChild(li);
+                });
+            }
+        }
+
+        // 3. Send nytt ønske til serveren
+        wishForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorMessage.classList.add('hidden');
+
+            const url = imdbUrlInput.value;
+
+            try {
+                const response = await fetch('/api/wishes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Noe gikk galt under lagring.');
+                }
+
+                // Tøm inputfeltet og oppdater listen
+                imdbUrlInput.value = '';
+                fetchWishes();
+
+            } catch (err) {
+                errorMessage.textContent = err.message;
+                errorMessage.classList.remove('hidden');
+            }
+        });
+
+        // 4. Slett et ønske
+        async function deleteWish(id) {
+            try {
+                const response = await fetch(`/api/wishes/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    fetchWishes();
+                } else {
+                    const data = await response.json();
+                    alert(data.error || 'Kunne ikke slette ønsket.');
+                }
+            } catch (err) {
+                console.error('Feil ved sletting:', err);
+            }
+        }
+
+        // Gjør slettefunksjonen tilgjengelig globalt for HTML onclick-eventer
+        window.deleteWish = deleteWish;
+
+        // Start ved å hente listen med en gang siden laster
+        fetchWishes();
+    </script>
+
 </body>
+
 </html>
